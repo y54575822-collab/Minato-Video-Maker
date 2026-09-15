@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minato Video Maker - AI Video Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-download {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+        }
+
+        .status-box {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .status-box.show {
+            display: block;
+        }
+
+        .status-item {
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-value {
+            color: #666;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+
+        .status-icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .error {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .feature-text {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Minato Video Maker</h1>
+            <p>Create Professional Videos with AI in Minutes</p>
+        </header>
+
+        <div class="content">
+            <form id="videoForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="topic">📝 Video Topic</label>
+                    <input 
+                        type="text" 
+                        id="topic" 
+                        placeholder="e.g., How to learn AI in 2025, Benefits of Machine Learning..."
+                        required
+                    />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="duration">⏱️ Video Duration</label>
+                        <select id="duration">
+                            <option value="1">1 Minute</option>
+                            <option value="2">2 Minutes</option>
+                            <option value="3">3 Minutes</option>
+                            <option value="5" selected>5 Minutes</option>
+                            <option value="10">10 Minutes</option>
+                            <option value="15">15 Minutes</option>
+                            <option value="20">20 Minutes</option>
+                            <option value="24">24 Minutes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orientation">📱 Video Format</label>
+                        <select id="orientation">
+                            <option value="portrait">Portrait (Shorts/Reels)</option>
+                            <option value="landscape">Landscape (Traditional)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn-generate" id="generateBtn">
+                        ✨ Generate Video
+                    </button>
+                    <button type="button" class="btn-download" id="downloadBtn" style="display:none;">
+                        ⬇️ Download Video
+                    </button>
+                </div>
+            </form>
+
+            <div id="statusBox" class="status-box">
+                <div class="status-item">
+                    <span class="status-icon">📊</span>
+                    <span class="status-label">Status:</span>
+                    <span class="status-value" id="statusValue">Initializing...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-icon">⏳</span>
+                    <span class="status-label">Progress:</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill">0%</div>
+                    </div>
+                </div>
+                <div class="status-item" id="messageItem" style="display:none;">
+                    <span class="status-label">Message:</span>
+                    <span class="status-value" id="messageValue"></span>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-text">AI Scripts</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎙️</div>
+                    <div class="feature-text">Auto Voiceover</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-text">Smart Captions</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎥</div>
+                    <div class="feature-text">AI Video Gen</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎵</div>
+                    <div class="feature-text">Background Music</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">24/7 Ready</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let currentJobId = null;
+        let pollInterval = null;
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const topic = document.getElementById('topic').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const orientation = document.getElementById('orientation').value;
+
+            if (!topic.trim()) {
+                alert('Please enter a video topic');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Starting...';
+
+            document.getElementById('downloadBtn').style.display = 'none';
+            showStatus('info', '⏳ Initializing video generation...');
+
+            try {
+                const response = await fetch(`${API_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: topic,
+                        duration_minutes: duration,
+                        orientation: orientation
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentJobId = data.job_id;
+
+                showStatus('info', `✅ Generation started! Job ID: ${data.job_id}`);
+                startPolling();
+            } catch (error) {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '✨ Generate Video';
+                showStatus('error', `❌ Error: ${error.message}`);
+                console.error('Error:', error);
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.classList.add('show', type);
+            statusBox.classList.remove('error', 'success', 'info');
+            statusBox.classList.add(type);
+            
+            const messageItem = document.getElementById('messageItem');
+            messageItem.style.display = 'block';
+            document.getElementById('messageValue').textContent = message;
+        }
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(pollStatus, 3000);
+        }
+
+        async function pollStatus() {
+            if (!currentJobId) return;
+
+            try {
+                const response = await fetch(`${API_URL}/status/${currentJobId}`);
+                if (!response.ok) throw new Error('Failed to get status');
+                
+                const data = response.json();
+                updateUI(data);
+            } catch (error) {
+                console.error('Poll error:', error);
+            }
+        }
+
+        function updateUI(data) {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.classList.add('show');
+
+            // Update status
+            const statusMap = {
+                'processing': '⏳ Processing',
+                'queued': '📋 Queued',
+                'completed': '✅ Completed',
+                'failed': '❌ Failed'
+            };
+
+            document.getElementById('statusValue').textContent = statusMap[data.status] || data.status;
+
+            // Update progress
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = `${data.progress}%`;
+            progressFill.textContent = `${data.progress}%`;
+
+            // Handle completion
+            if (data.status === 'completed') {
+                clearInterval(pollInterval);
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').textContent = '✨ Generate Video';
+                document.getElementById('downloadBtn').style.display = 'block';
+                statusBox.classList.remove('error', 'info');
+                statusBox.classList.add('success');
+                document.getElementById('messageValue').textContent = '🎉 Video ready for download!';
+            } else if (data.status === 'failed') {
+                clearInterval(pollInterval);
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').textContent = '✨ Generate Video';
+                statusBox.classList.remove('success', 'info');
+                statusBox.classList.add('error');
+                document.getElementById('messageValue').textContent = `❌ Error: ${data.error || 'Unknown error'}`;
+            }
+        }
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            if (currentJobId) {
+                const link = document.createElement('a');
+                link.href = `${API_URL}/download/${currentJobId}`;
+                link.download = 'minato_video.mp4';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+    </script>
+</body>
+</html>
